@@ -1,243 +1,294 @@
 
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useRestaurants } from '@/hooks/use-restaurants';
-import { Restaurant } from '@/types';
-import RestaurantGrid from '@/components/Restaurant/RestaurantGrid';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Search, MapPin, ChevronRight } from 'lucide-react';
-import { useViewStore } from '@/store/store';
+import {
+  Card,
+  CardContent,
+} from '@/components/ui/card';
+import RestaurantGrid from '@/components/Restaurant/RestaurantGrid';
+import { Search, ArrowRight, MapPin, Clock, Star, Utensils, ChevronRight } from 'lucide-react';
 
 const cuisineTypes = [
-  'All',
-  'Indian',
-  'Italian',
-  'Chinese',
-  'Mexican',
-  'Japanese',
-  'Thai',
-  'American',
-  'Mediterranean',
-  'Vegetarian',
+  { name: 'Indian', icon: '🍛' },
+  { name: 'Italian', icon: '🍕' },
+  { name: 'Chinese', icon: '🥢' },
+  { name: 'Mexican', icon: '🌮' },
+  { name: 'Japanese', icon: '🍣' },
+  { name: 'Thai', icon: '🍜' },
+  { name: 'American', icon: '🍔' },
+  { name: 'Mediterranean', icon: '🥙' },
+  { name: 'Vegetarian', icon: '🥗' },
 ];
 
 const Home = () => {
-  const { darkMode } = useViewStore();
-  const [activeTab, setActiveTab] = useState('featured');
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCuisine, setSelectedCuisine] = useState('All');
+  const { data: featuredRestaurants, isLoading } = useRestaurants();
   
-  const { data: restaurants, isLoading } = useRestaurants();
-  
-  const [filteredRestaurants, setFilteredRestaurants] = useState<Restaurant[]>([]);
-  const [featuredRestaurants, setFeaturedRestaurants] = useState<Restaurant[]>([]);
-  
-  useEffect(() => {
-    if (restaurants) {
-      const featured = restaurants.filter(restaurant => restaurant.is_featured);
-      setFeaturedRestaurants(featured);
-      
-      let filtered = restaurants;
-      
-      // Apply cuisine filter
-      if (selectedCuisine !== 'All') {
-        filtered = filtered.filter(restaurant => 
-          restaurant.cuisine_type.includes(selectedCuisine)
-        );
-      }
-      
-      // Apply search filter
-      if (searchQuery) {
-        const query = searchQuery.toLowerCase();
-        filtered = filtered.filter(restaurant => 
-          restaurant.name.toLowerCase().includes(query) || 
-          restaurant.cuisine_type.some(cuisine => cuisine.toLowerCase().includes(query)) ||
-          restaurant.description.toLowerCase().includes(query)
-        );
-      }
-      
-      setFilteredRestaurants(filtered);
-    }
-  }, [restaurants, selectedCuisine, searchQuery]);
-
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    // Search is handled in the useEffect
+    if (searchQuery.trim()) {
+      navigate(`/restaurants?search=${encodeURIComponent(searchQuery)}`);
+    }
   };
-
-  const handleCuisineSelect = (cuisine: string) => {
-    setSelectedCuisine(cuisine);
-  };
-
+  
+  const featuredRestaurantsData = featuredRestaurants
+    ?.filter(restaurant => restaurant.is_featured)
+    .slice(0, 3);
+  
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Hero Section */}
-      <section className="relative h-[500px] bg-gradient-to-r from-gray-900 to-gray-700 text-white">
-        <div className="absolute inset-0 overflow-hidden">
-          <img 
-            src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=2000&q=80" 
-            alt="Food banner" 
-            className="w-full h-full object-cover opacity-40"
-          />
-        </div>
-        <div className="relative container-custom h-full flex flex-col justify-center">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
-            Delicious Food, <br />Delivered to Your Door
-          </h1>
-          <p className="text-lg md:text-xl mb-8 max-w-2xl">
-            Order from your favorite restaurants and enjoy the convenience of home delivery.
-          </p>
-          
-          <form onSubmit={handleSearch} className="relative max-w-md">
-            <Input
-              type="text"
-              placeholder="Search for restaurants or cuisines"
-              className="pl-10 pr-4 py-6 text-black dark:text-white rounded-lg"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            <Search className="absolute left-3 top-3 h-5 w-5 text-gray-500" />
-            <Button 
-              type="submit" 
-              className="absolute right-1 top-1 bg-foodie-red hover:bg-red-600"
-            >
-              Search
-            </Button>
-          </form>
-          
-          <div className="flex items-center mt-4 text-white">
-            <MapPin className="h-5 w-5 mr-2" />
-            <span>Find restaurants near you</span>
+    <div className="min-h-screen">
+      {/* Hero Section with Glassmorphism */}
+      <section className="relative overflow-hidden py-20 md:py-28">
+        <div className="absolute inset-0 bg-gradient-to-r from-red-600 to-orange-500 opacity-90 z-0"></div>
+        <div className="absolute inset-0 z-0 opacity-20" style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1543353071-10c8ba85a904?q=80&w=2070)', backgroundSize: 'cover', backgroundPosition: 'center' }}></div>
+        <div className="container-custom relative z-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div className="text-white">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 text-gradient">
+                Delicious Food <span className="text-yellow-300">Delivered</span> Fast
+              </h1>
+              <p className="text-lg mb-8 text-white/90 max-w-xl">
+                Order from thousands of local restaurants and get your favorite meals delivered to your doorstep. Discover new flavors today.
+              </p>
+              
+              <form onSubmit={handleSearch} className="flex w-full max-w-lg bg-white/10 p-1.5 rounded-lg backdrop-blur-sm">
+                <div className="relative flex-1">
+                  <MapPin className="absolute left-3 top-3.5 h-5 w-5 text-white" />
+                  <Input
+                    type="text"
+                    placeholder="Search for food or restaurants..."
+                    className="pl-10 h-12 rounded-md border-0 bg-white/20 text-white placeholder:text-white/70 focus-visible:ring-offset-0 focus-visible:ring-transparent"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+                <Button 
+                  type="submit" 
+                  className="h-12 px-6 ms-2 rounded-md bg-yellow-400 hover:bg-yellow-500 text-black font-medium"
+                >
+                  <Search className="h-5 w-5 mr-2" />
+                  Search
+                </Button>
+              </form>
+            </div>
+            
+            <div className="hidden md:flex justify-end">
+              <div className="relative">
+                <img
+                  src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?q=80&w=1000&auto=format&fit=crop"
+                  alt="Delicious Food"
+                  className="rounded-lg shadow-2xl max-w-md object-cover transform hover:scale-105 transition-transform duration-300"
+                  style={{ height: '400px' }}
+                />
+                <div className="absolute -bottom-6 -left-6 bg-white dark:bg-gray-800 p-4 rounded-lg shadow-lg">
+                  <div className="flex items-center">
+                    <div className="bg-green-500 rounded-full p-2">
+                      <Clock className="h-6 w-6 text-white" />
+                    </div>
+                    <div className="ml-3">
+                      <p className="text-sm text-gray-500 dark:text-gray-400">Delivery Time</p>
+                      <p className="font-medium">20-30 min</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
-
+      
       {/* Cuisine Categories */}
-      <section className="py-8 bg-white dark:bg-gray-800 shadow-sm">
+      <section className="py-16 bg-gray-50 dark:bg-gray-900/50">
         <div className="container-custom">
-          <div className="flex overflow-x-auto pb-2 scrollbar-hide">
+          <div className="flex justify-between items-center mb-8">
+            <h2 className="text-3xl font-bold">Explore By <span className="text-foodie-red">Cuisine</span></h2>
+            <Button 
+              variant="ghost" 
+              className="text-foodie-red"
+              onClick={() => navigate('/restaurants')}
+            >
+              View All <ChevronRight className="ml-1 h-4 w-4" />
+            </Button>
+          </div>
+          
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-9 gap-4">
             {cuisineTypes.map((cuisine) => (
-              <button
-                key={cuisine}
-                onClick={() => handleCuisineSelect(cuisine)}
-                className={`px-4 py-2 mx-1 rounded-full whitespace-nowrap ${
-                  selectedCuisine === cuisine
-                    ? 'bg-foodie-red text-white'
-                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-                }`}
+              <Link 
+                key={cuisine.name} 
+                to={`/restaurants?cuisine=${cuisine.name}`} 
+                className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 text-center hover:shadow-md transition-shadow transform hover:scale-105 transition-transform duration-200"
               >
-                {cuisine}
-              </button>
+                <div className="text-3xl mb-2">{cuisine.icon}</div>
+                <h3 className="font-medium text-sm">{cuisine.name}</h3>
+              </Link>
             ))}
           </div>
         </div>
       </section>
-
-      {/* Main Content */}
-      <section className="py-12">
+      
+      {/* Featured Restaurants with Cards */}
+      <section className="py-16">
         <div className="container-custom">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <div className="flex justify-between items-center mb-6">
-              <TabsList>
-                <TabsTrigger value="featured">Featured</TabsTrigger>
-                <TabsTrigger value="all">All Restaurants</TabsTrigger>
-              </TabsList>
-              <Link to="/restaurants">
-                <Button variant="ghost" className="text-foodie-red">
-                  View All <ChevronRight className="h-4 w-4 ml-1" />
-                </Button>
-              </Link>
-            </div>
-            
-            <TabsContent value="featured" className="mt-4">
-              <RestaurantGrid restaurants={featuredRestaurants} loading={isLoading} />
-            </TabsContent>
-            
-            <TabsContent value="all" className="mt-4">
-              <RestaurantGrid restaurants={filteredRestaurants} loading={isLoading} />
-            </TabsContent>
-          </Tabs>
+          <div className="flex justify-between items-center mb-8">
+            <h2 className="text-3xl font-bold">Featured <span className="text-foodie-red">Restaurants</span></h2>
+            <Button 
+              variant="ghost" 
+              className="text-foodie-red"
+              onClick={() => navigate('/restaurants')}
+            >
+              View All <ArrowRight className="ml-1 h-4 w-4" />
+            </Button>
+          </div>
+          
+          <RestaurantGrid 
+            restaurants={featuredRestaurantsData || []} 
+            loading={isLoading} 
+          />
         </div>
       </section>
-
-      {/* How It Works */}
-      <section className="py-12 bg-gray-50 dark:bg-gray-900">
+      
+      {/* How It Works with Modern Cards */}
+      <section className="py-16 bg-gray-50 dark:bg-gray-900/50">
         <div className="container-custom">
-          <h2 className="text-3xl font-bold text-center mb-12">How It Works</h2>
+          <h2 className="text-3xl font-bold mb-12 text-center">How <span className="text-foodie-red">FoodieGo</span> Works</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg text-center shadow-sm">
-              <div className="w-16 h-16 bg-foodie-red text-white rounded-full flex items-center justify-center mx-auto mb-4">
-                <Search className="h-8 w-8" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2">Browse Restaurants</h3>
-              <p className="text-gray-600 dark:text-gray-400">
-                Explore restaurants and cuisines available in your area.
-              </p>
-            </div>
+            <Card className="text-center border-0 bg-white dark:bg-gray-800 shadow-md hover:shadow-lg transition-shadow overflow-hidden group">
+              <div className="h-2 bg-gradient-to-r from-red-500 to-orange-500"></div>
+              <CardContent className="pt-8 pb-8">
+                <div className="w-16 h-16 bg-red-50 dark:bg-gray-700 text-foodie-red rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
+                  <Search className="h-8 w-8" />
+                </div>
+                <h3 className="text-xl font-bold mb-2">Choose a Restaurant</h3>
+                <p className="text-gray-500 dark:text-gray-400">
+                  Browse through hundreds of restaurants and cuisines to find exactly what you're craving.
+                </p>
+              </CardContent>
+            </Card>
             
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg text-center shadow-sm">
-              <div className="w-16 h-16 bg-foodie-orange text-white rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                  <path d="M18 2l4 4"></path>
-                  <path d="M15 5l4 4"></path>
-                  <path d="M15 9h4V5"></path>
-                </svg>
-              </div>
-              <h3 className="text-xl font-semibold mb-2">Place Your Order</h3>
-              <p className="text-gray-600 dark:text-gray-400">
-                Select your favorite dishes and add them to your cart.
-              </p>
-            </div>
+            <Card className="text-center border-0 bg-white dark:bg-gray-800 shadow-md hover:shadow-lg transition-shadow overflow-hidden group">
+              <div className="h-2 bg-gradient-to-r from-orange-500 to-yellow-500"></div>
+              <CardContent className="pt-8 pb-8">
+                <div className="w-16 h-16 bg-orange-50 dark:bg-gray-700 text-orange-500 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
+                  <MapPin className="h-8 w-8" />
+                </div>
+                <h3 className="text-xl font-bold mb-2">Place Your Order</h3>
+                <p className="text-gray-500 dark:text-gray-400">
+                  Select your favorite dishes, customize as needed, and checkout with your preferred payment method.
+                </p>
+              </CardContent>
+            </Card>
             
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg text-center shadow-sm">
-              <div className="w-16 h-16 bg-foodie-green text-white rounded-full flex items-center justify-center mx-auto mb-4">
-                <MapPin className="h-8 w-8" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2">Fast Delivery</h3>
-              <p className="text-gray-600 dark:text-gray-400">
-                Track your order in real-time until it arrives at your door.
-              </p>
-            </div>
+            <Card className="text-center border-0 bg-white dark:bg-gray-800 shadow-md hover:shadow-lg transition-shadow overflow-hidden group">
+              <div className="h-2 bg-gradient-to-r from-yellow-500 to-green-500"></div>
+              <CardContent className="pt-8 pb-8">
+                <div className="w-16 h-16 bg-green-50 dark:bg-gray-700 text-green-500 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
+                  <Clock className="h-8 w-8" />
+                </div>
+                <h3 className="text-xl font-bold mb-2">Fast Delivery</h3>
+                <p className="text-gray-500 dark:text-gray-400">
+                  Track your order in real-time and enjoy your meal delivered straight to your doorstep.
+                </p>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </section>
-
-      {/* App Download Section */}
-      <section className="py-12 bg-white dark:bg-gray-800">
-        <div className="container-custom">
-          <div className="flex flex-col md:flex-row items-center">
-            <div className="w-full md:w-1/2 mb-8 md:mb-0">
-              <h2 className="text-3xl font-bold mb-4">Download Our Mobile App</h2>
-              <p className="text-gray-600 dark:text-gray-400 mb-6">
-                Get the full FoodieGo experience on your phone. Order food, track deliveries, and get special app-only deals.
+      
+      {/* Download App CTA with Glass Morphism */}
+      <section className="py-16 relative overflow-hidden">
+        <div className="absolute inset-0 bg-foodie-red opacity-95 z-0"></div>
+        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1521767704734-17fdb66d5f8f?q=80&w=1974')] bg-cover bg-center opacity-20 z-0"></div>
+        <div className="container-custom relative z-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div className="text-white">
+              <h2 className="text-3xl font-bold mb-4">Get the FoodieGo App</h2>
+              <p className="text-lg mb-8 text-white/90">
+                Get a better experience and more features by downloading our mobile app. Order food anytime, anywhere.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Button className="bg-black hover:bg-gray-800 text-white">
-                  <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M17.08 13.313c.734.733 1.383 1.054 1.785.656.598-.598-.145-1.772-1.175-2.802-.955-.956-2.001-1.627-2.598-1.03-.408.408-.087 1.057.656 1.801.678.678 1.148 1.19 1.332 1.374zM6.586 19.071c.181.181.698.65 1.377 1.329.743.743 1.392 1.064 1.8.656.598-.598-.074-1.643-1.03-2.599-1.03-1.03-2.205-1.773-2.802-1.175-.398.398-.078 1.047.655 1.785v.004zM21.631 11.498c-1.496-1.496-3.535-2.223-4.873-.885-.775.775-.518 1.847.13 2.974l-1.781 1.781c-1.127-.648-2.199-.905-2.973-.13-1.339 1.339-.612 3.378.885 4.873 1.496 1.497 3.535 2.224 4.873.885.775-.775.518-1.847-.13-2.974l1.781-1.781c1.127.648 2.199.905 2.973.13 1.339-1.339.612-3.378-.885-4.873zm-12.702-.726c-1.252.071-2.735-.4-4.325-1.422l-.24.241 4.893 4.894.241-.241c-1.02-1.59-1.492-3.071-1.42-4.323.041-.723.28-1.369.851-1.771L2.98 2.2 2.2 2.98l4.947 4.947c-.322.488-.874.841-1.618.895zm8.309 6.065c-.774.775-2.12.213-3.36-1.029-1.243-1.243-1.804-2.588-1.03-3.363.775-.773 2.12-.211 3.363 1.031 1.243 1.244 1.804 2.588 1.029 3.361h-.002zM10.782 21.83c-.775.775-2.12.213-3.363-1.029-1.242-1.242-1.804-2.588-1.029-3.361.773-.775 2.12-.213 3.363 1.029 1.242 1.242 1.804 2.586 1.029 3.361z"/>
+              <div className="flex flex-wrap gap-4">
+                <Button className="bg-black hover:bg-gray-900 text-white">
+                  <svg className="h-5 w-5 mr-2" viewBox="0 0 384 512" fill="currentColor">
+                    <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/>
                   </svg>
                   App Store
                 </Button>
-                <Button className="bg-black hover:bg-gray-800 text-white">
-                  <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M3.609 1.814L13.792 12 3.609 22.186a.996.996 0 0 1-.273-.635V2.449c0-.228.087-.45.273-.635zM14.822 13.03l2.871-1.661 3.041 1.756a.996.996 0 0 1 0 1.751l-3.041 1.755-2.871-1.661 2.182-1.26-2.182-1.26zM5.876 1.043l10.431 6.022-2.868 1.656L5.876 1.043zm7.564 15.925l2.868 1.655-10.432 6.022 7.564-7.677z"/>
+                <Button className="bg-black hover:bg-gray-900 text-white">
+                  <svg className="h-5 w-5 mr-2" viewBox="0 0 512 512" fill="currentColor">
+                    <path d="M325.3 234.3L104.6 13l280.8 161.2-60.1 60.1zM47 0C34 6.8 25.3 19.2 25.3 35.3v441.3c0 16.1 8.7 28.5 21.7 35.3l256.6-256L47 0zm425.2 225.6l-58.9-34.1-65.7 64.5 65.7 64.5 60.1-34.1c18-14.3 18-46.5-1.2-60.8zM104.6 499l280.8-161.2-60.1-60.1L104.6 499z"/>
                   </svg>
                   Google Play
                 </Button>
               </div>
             </div>
-            <div className="w-full md:w-1/2 flex justify-center">
-              <img
-                src="https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&w=500&q=80"
-                alt="Mobile App"
-                className="max-w-full h-auto rounded-lg shadow-xl"
-                style={{ maxHeight: '500px' }}
-              />
+            <div className="hidden md:flex justify-end">
+              <div className="relative">
+                <img
+                  src="https://images.unsplash.com/photo-1551024709-8f23befc6f87?q=80&w=1000&auto=format&fit=crop"
+                  alt="Mobile App"
+                  className="max-w-sm rounded-lg shadow-2xl transform hover:scale-105 transition-transform duration-300"
+                />
+                <div className="absolute -top-5 -right-5 bg-yellow-400 text-black font-bold p-3 rounded-lg shadow-lg rotate-12">
+                  50% OFF
+                  <div className="text-xs font-normal">First Order</div>
+                </div>
+              </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials */}
+      <section className="py-16 bg-gray-50 dark:bg-gray-900/50">
+        <div className="container-custom">
+          <h2 className="text-3xl font-bold mb-12 text-center">What Our <span className="text-foodie-red">Customers</span> Say</h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              {
+                name: "Sarah Johnson",
+                image: "https://randomuser.me/api/portraits/women/44.jpg",
+                rating: 5,
+                comment: "FoodieGo has been a lifesaver during busy workdays. The delivery is always on time and the food arrives hot!"
+              },
+              {
+                name: "Michael Chen",
+                image: "https://randomuser.me/api/portraits/men/32.jpg",
+                rating: 5,
+                comment: "I love the variety of restaurants available. I've discovered so many new favorite places through this app."
+              },
+              {
+                name: "Priya Sharma",
+                image: "https://randomuser.me/api/portraits/women/63.jpg",
+                rating: 4,
+                comment: "Great service and user-friendly app. I use it at least twice a week for lunch and dinner orders."
+              }
+            ].map((testimonial, index) => (
+              <Card key={index} className="border-0 bg-white dark:bg-gray-800 shadow-md overflow-hidden">
+                <CardContent className="pt-6">
+                  <div className="flex items-center mb-4">
+                    <img 
+                      src={testimonial.image} 
+                      alt={testimonial.name}
+                      className="w-12 h-12 rounded-full mr-4 border-2 border-foodie-red"
+                    />
+                    <div>
+                      <h4 className="font-medium">{testimonial.name}</h4>
+                      <div className="flex text-yellow-400">
+                        {[...Array(testimonial.rating)].map((_, i) => (
+                          <Star key={i} className="h-4 w-4 fill-current" />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  <p className="italic text-gray-600 dark:text-gray-300">"{testimonial.comment}"</p>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </div>
       </section>

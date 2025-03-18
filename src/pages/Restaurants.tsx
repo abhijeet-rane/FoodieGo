@@ -44,7 +44,6 @@ const Restaurants = () => {
   const [filteredRestaurants, setFilteredRestaurants] = useState<Restaurant[]>([]);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   
-  // Local filter state
   const [selectedCuisines, setSelectedCuisines] = useState<string[]>(filters.cuisine_type || []);
   const [priceRange, setPriceRange] = useState<number[]>(filters.price_range || [1, 4]);
   const [minRating, setMinRating] = useState<number>(filters.rating || 0);
@@ -52,12 +51,10 @@ const Restaurants = () => {
   const [maxDeliveryTime, setMaxDeliveryTime] = useState<number>(filters.delivery_time || 60);
   const [sortBy, setSortBy] = useState<string>(filters.sort_by || 'rating');
   
-  // Apply filters
   useEffect(() => {
     if (allRestaurants) {
       let filtered = [...allRestaurants];
       
-      // Search query filter
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
         filtered = filtered.filter(restaurant => 
@@ -67,36 +64,30 @@ const Restaurants = () => {
         );
       }
       
-      // Cuisine filter
       if (selectedCuisines.length > 0) {
         filtered = filtered.filter(restaurant => 
           restaurant.cuisine_type.some(cuisine => selectedCuisines.includes(cuisine))
         );
       }
       
-      // Price range filter
       filtered = filtered.filter(restaurant => 
         restaurant.price_range >= priceRange[0] && restaurant.price_range <= priceRange[1]
       );
       
-      // Rating filter
       if (minRating > 0) {
         filtered = filtered.filter(restaurant => restaurant.rating >= minRating);
       }
       
-      // Vegetarian filter
       if (isVegetarian) {
         filtered = filtered.filter(restaurant => 
           restaurant.cuisine_type.includes('Vegetarian') || restaurant.cuisine_type.includes('Vegan')
         );
       }
       
-      // Delivery time filter
       if (maxDeliveryTime < 60) {
         filtered = filtered.filter(restaurant => restaurant.delivery_time <= maxDeliveryTime);
       }
       
-      // Sorting
       if (sortBy === 'rating') {
         filtered.sort((a, b) => b.rating - a.rating);
       } else if (sortBy === 'delivery_time') {
@@ -120,7 +111,6 @@ const Restaurants = () => {
     sortBy
   ]);
   
-  // Save filters to store when applying
   const applyFilters = () => {
     setFilters({
       cuisine_type: selectedCuisines.length > 0 ? selectedCuisines : undefined,
@@ -133,7 +123,6 @@ const Restaurants = () => {
     setShowMobileFilters(false);
   };
   
-  // Reset all filters
   const handleResetFilters = () => {
     setSelectedCuisines([]);
     setPriceRange([1, 4]);
@@ -146,7 +135,6 @@ const Restaurants = () => {
   
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    // Search is applied in useEffect
   };
   
   const toggleCuisine = (cuisine: string) => {
@@ -157,16 +145,14 @@ const Restaurants = () => {
     }
   };
   
-  // Format price range for display
   const formatPriceRange = (range: number[]) => {
     return range.map(price => '$'.repeat(price)).join(' - ');
   };
   
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-8 pb-16">
-      <div className="container-custom">
+      <div className="container mx-auto px-4">
         <div className="flex flex-col md:flex-row gap-8">
-          {/* Filters - Desktop */}
           <div className="hidden md:block w-1/4 bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 self-start sticky top-24">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-semibold">Filters</h2>
@@ -277,7 +263,7 @@ const Restaurants = () => {
             <div className="mt-6">
               <Label>Sort By</Label>
               <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="mt-2">
+                <SelectTrigger>
                   <SelectValue placeholder="Sort by" />
                 </SelectTrigger>
                 <SelectContent>
@@ -297,7 +283,6 @@ const Restaurants = () => {
             </Button>
           </div>
           
-          {/* Main Content */}
           <div className="flex-1">
             <div className="flex justify-between items-center mb-6">
               <h1 className="text-2xl font-bold">All Restaurants</h1>
@@ -337,7 +322,6 @@ const Restaurants = () => {
               <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
             </form>
             
-            {/* Active filters display */}
             {(selectedCuisines.length > 0 || minRating > 0 || isVegetarian || maxDeliveryTime < 60) && (
               <div className="flex flex-wrap gap-2 mb-6">
                 {selectedCuisines.map(cuisine => (
@@ -402,7 +386,6 @@ const Restaurants = () => {
         </div>
       </div>
       
-      {/* Mobile Filters Modal */}
       {showMobileFilters && (
         <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex justify-end md:hidden">
           <div className="w-4/5 bg-white dark:bg-gray-800 h-full overflow-y-auto p-6">

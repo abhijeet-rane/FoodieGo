@@ -74,7 +74,9 @@ export interface Order {
   id: string;
   user_id: string;
   restaurant_id: string;
+  restaurant?: Restaurant;
   address_id: string;
+  address?: Address;
   items: CartItem[];
   total_amount: number;
   status: 'pending' | 'preparing' | 'out_for_delivery' | 'delivered' | 'cancelled';
@@ -84,6 +86,7 @@ export interface Order {
   placed_at: string;
   estimated_delivery_time?: string;
   delivered_at?: string;
+  is_complete?: boolean;
 }
 
 export interface Review {

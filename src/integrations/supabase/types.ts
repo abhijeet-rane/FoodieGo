@@ -110,6 +110,7 @@ export type Database = {
           delivery_partner_id: string | null
           estimated_delivery_time: string | null
           id: string
+          is_complete: boolean | null
           items: Json
           payment_method: string
           payment_status: string
@@ -125,6 +126,7 @@ export type Database = {
           delivery_partner_id?: string | null
           estimated_delivery_time?: string | null
           id?: string
+          is_complete?: boolean | null
           items: Json
           payment_method: string
           payment_status: string
@@ -140,6 +142,7 @@ export type Database = {
           delivery_partner_id?: string | null
           estimated_delivery_time?: string | null
           id?: string
+          is_complete?: boolean | null
           items?: Json
           payment_method?: string
           payment_status?: string
@@ -341,7 +344,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
     }
     Enums: {
       user_role: "customer" | "restaurant_owner" | "admin" | "delivery_partner"

@@ -4,29 +4,43 @@ import { supabase } from '@/lib/supabase';
 import { Order, CartItem } from '@/types';
 import { toast } from 'sonner';
 import { useCartStore } from '@/store/store';
+import { useAuth } from '@/hooks/use-auth';
 
 // Get user orders
 export const useUserOrders = (userId?: string) => {
   return useQuery({
-    queryKey: ['orders', 'user', userId],
+    queryKey: ['userOrders', userId],
     queryFn: async () => {
-      if (!userId) return [];
+      if (!userId) throw new Error('User ID is required');
       
-      const { data, error } = await supabase
+      const { data: orders, error } = await supabase
         .from('orders')
-        .select('*, restaurant:restaurants(name, featured_image)')
+        .select('*')
         .eq('user_id', userId)
         .order('placed_at', { ascending: false });
-
+      
       if (error) throw error;
       
-      // Transform database items back to CartItem[]
-      return data.map(order => ({
-        ...order,
-        items: order.items as unknown as CartItem[]
-      })) as Order[];
+      // Fetch restaurant details for each order
+      const ordersWithRestaurants = await Promise.all(
+        orders.map(async (order) => {
+          const { data: restaurant } = await supabase
+            .from('restaurants')
+            .select('*')
+            .eq('id', order.restaurant_id)
+            .single();
+          
+          return {
+            ...order,
+            restaurant,
+            items: order.items as unknown as CartItem[] // Cast JSON to CartItem[]
+          };
+        })
+      );
+      
+      return ordersWithRestaurants as unknown as Order[]; // Explicit type casting
     },
-    enabled: !!userId,
+    enabled: !!userId
   });
 };
 
@@ -49,7 +63,7 @@ export const useRestaurantOrders = (restaurantId?: string) => {
       return data.map(order => ({
         ...order,
         items: order.items as unknown as CartItem[]
-      })) as Order[];
+      })) as unknown as Order[];
     },
     enabled: !!restaurantId,
   });
@@ -64,7 +78,7 @@ export const useOrder = (id?: string) => {
       
       const { data, error } = await supabase
         .from('orders')
-        .select('*, restaurant:restaurants(name, address, featured_image), user:profiles(name, email), address:addresses(*)')
+        .select('*, restaurant:restaurants(*, name, address, featured_image), user:profiles(name, email), address:addresses(*)')
         .eq('id', id)
         .single();
 
@@ -74,7 +88,7 @@ export const useOrder = (id?: string) => {
       return {
         ...data,
         items: data.items as unknown as CartItem[]
-      } as Order;
+      } as unknown as Order;
     },
     enabled: !!id,
   });
@@ -121,6 +135,7 @@ export const useCreateOrder = () => {
           payment_status: paymentMethod === 'cash' ? 'pending' : 'paid',
           placed_at: placedAt,
           estimated_delivery_time: estimatedDeliveryTime,
+          is_complete: false
         })
         .select()
         .single();
@@ -165,6 +180,7 @@ export const useCreateOrder = () => {
           .update({
             status: 'delivered',
             delivered_at: new Date().toISOString(),
+            is_complete: true
           })
           .eq('id', resultOrder.id);
           
@@ -201,9 +217,10 @@ export const useUpdateOrderStatus = () => {
     }) => {
       const updates: any = { status };
       
-      // If status is delivered, set delivered_at
+      // If status is delivered, set delivered_at and is_complete
       if (status === 'delivered') {
         updates.delivered_at = new Date().toISOString();
+        updates.is_complete = true;
       }
       
       const { data, error } = await supabase
@@ -243,6 +260,7 @@ export const useCancelOrder = () => {
         .from('orders')
         .update({
           status: 'cancelled',
+          is_complete: true
         })
         .eq('id', id)
         .select()
@@ -265,5 +283,51 @@ export const useCancelOrder = () => {
     onError: (error: any) => {
       toast.error(error.message || 'Failed to cancel order');
     },
+  });
+};
+
+// Add a function to fetch both order and related restaurant
+export const useOrderWithDetails = (orderId?: string) => {
+  const { user } = useAuth();
+  
+  return useQuery({
+    queryKey: ['order', orderId],
+    queryFn: async () => {
+      if (!orderId) throw new Error('Order ID is required');
+      
+      // Fetch the order
+      const { data: order, error } = await supabase
+        .from('orders')
+        .select('*')
+        .eq('id', orderId)
+        .single();
+      
+      if (error) throw error;
+      if (!order) throw new Error('Order not found');
+      
+      // Fetch the restaurant
+      const { data: restaurant } = await supabase
+        .from('restaurants')
+        .select('*')
+        .eq('id', order.restaurant_id)
+        .single();
+      
+      // Fetch the address
+      const { data: address } = await supabase
+        .from('addresses')
+        .select('*')
+        .eq('id', order.address_id)
+        .single();
+      
+      // Return the order with restaurant and address details
+      return {
+        ...order,
+        items: order.items as unknown as CartItem[],
+        restaurant,
+        address,
+        is_complete: order.is_complete || false
+      } as unknown as Order;
+    },
+    enabled: !!user && !!orderId
   });
 };
