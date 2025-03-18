@@ -16,7 +16,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 import { Address } from '@/types';
-import { getCurrentLocation } from '@/lib/geolocation';
+import { getUserLocation } from '@/lib/geolocation';
 import { MapPin, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
