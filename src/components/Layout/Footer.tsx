@@ -91,12 +91,12 @@ const Footer = () => {
               <li className="flex items-start">
                 <MapPin className="w-5 h-5 text-foodie-red mr-2 mt-0.5" />
                 <span className="text-gray-600 dark:text-gray-400">
-                  1234 Food Street, Delicious City, Tasty State, 56789
+                  1234 Food Street, Delicious City, Tasty State, 456789
                 </span>
               </li>
               <li className="flex items-center">
                 <Phone className="w-5 h-5 text-foodie-red mr-2" />
-                <span className="text-gray-600 dark:text-gray-400">+1 (123) 456-7890</span>
+                <span className="text-gray-600 dark:text-gray-400">+91 1234567890</span>
               </li>
               <li className="flex items-center">
                 <Mail className="w-5 h-5 text-foodie-red mr-2" />
